@@ -1,0 +1,273 @@
+@import "tailwindcss";
+
+/* Dark mode is driven by the data-theme attribute on <html>, set before first paint. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ------------------------------------------------------------------ */
+/* Colour tokens. Five colours, one accent, both modes.               */
+/* ------------------------------------------------------------------ */
+
+:root {
+    --canvas: #e8eceb; /* Mist */
+    --surface: #f5f7f6; /* Frost */
+    --ink: #14181b; /* Graphite */
+    --muted: #59646a; /* Slate */
+    --accent: #7d9ae9; /* Signal */
+    --on-accent: #14181b;
+    --hairline: color-mix(in srgb, var(--ink) 14%, transparent);
+    color-scheme: light;
+
+    /* Z-index scale. Use these variables, never ad hoc numbers. */
+    --z-backdrop: -1;
+    --z-nav: 40;
+    --z-overlay: 60;
+}
+
+:root[data-theme="dark"] {
+    --canvas: #0e1113; /* Basalt */
+    --surface: #171b1e;
+    --ink: #e6eaea;
+    --muted: #8d979c;
+    --accent: #92aaea;
+    --on-accent: #0e1113;
+    color-scheme: dark;
+}
+
+/* No-JavaScript fallback: follow the system preference when data-theme is unset. */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        --canvas: #0e1113;
+        --surface: #171b1e;
+        --ink: #e6eaea;
+        --muted: #8d979c;
+        --accent: #92aaea;
+        --on-accent: #0e1113;
+        color-scheme: dark;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Tailwind theme. The default colour palette is removed on purpose.  */
+/* ------------------------------------------------------------------ */
+
+@theme {
+    --color-*: initial;
+}
+
+@theme inline {
+    --color-canvas: var(--canvas);
+    --color-surface: var(--surface);
+    --color-ink: var(--ink);
+    --color-muted: var(--muted);
+    --color-accent: var(--accent);
+    --color-on-accent: var(--on-accent);
+    --color-hairline: var(--hairline);
+
+    --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+    --font-display:
+        var(--font-cabinet), var(--font-geist-sans), ui-sans-serif, system-ui,
+        sans-serif;
+
+    /* Type scale: 1.333 ratio from a 16px base, fluid at the top end. */
+    --text-meta: 0.78rem;
+    --text-meta--line-height: 1.4;
+    --text-lead: 1.3125rem;
+    --text-lead--line-height: 1.5;
+    --text-h3: 1.5rem;
+    --text-h3--line-height: 1.2;
+    --text-h3--letter-spacing: -0.02em;
+    --text-h2: clamp(2rem, 1.4rem + 2vw, 3rem);
+    --text-h2--line-height: 1.05;
+    --text-h2--letter-spacing: -0.03em;
+    --text-headline: clamp(2.5rem, 1rem + 5.6vw, 6.5rem);
+    --text-headline--line-height: 0.98;
+    --text-headline--letter-spacing: -0.04em;
+    --text-name: clamp(4.5rem, 0.5rem + 10vw, 18rem);
+    --text-name--line-height: 0.86;
+    --text-name--letter-spacing: -0.055em;
+    --text-display: clamp(2.5rem, 1.3rem + 4.6vw, 4.5rem);
+    --text-display--line-height: 1.02;
+    --text-display--letter-spacing: -0.04em;
+
+    --ease-spring-out: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                               */
+/* ------------------------------------------------------------------ */
+
+@layer base {
+    html,
+    body {
+        overflow-x: clip;
+    }
+
+    html {
+        background-color: var(--canvas);
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        background-color: var(--canvas);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+
+    ::selection {
+        background-color: var(--accent);
+        color: var(--on-accent);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Theme change: blend colours instead of snapping.                   */
+/* Every colour is a variable, so when data-theme flips, these        */
+/* properties animate. The class is only present for ~600ms.          */
+/* ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+    html.theme-transition,
+    html.theme-transition *,
+    html.theme-transition *::before,
+    html.theme-transition *::after {
+        transition:
+            background-color 500ms cubic-bezier(0.32, 0.72, 0, 1),
+            color 500ms cubic-bezier(0.32, 0.72, 0, 1),
+            border-color 500ms cubic-bezier(0.32, 0.72, 0, 1),
+            outline-color 500ms cubic-bezier(0.32, 0.72, 0, 1),
+            fill 500ms cubic-bezier(0.32, 0.72, 0, 1),
+            stroke 500ms cubic-bezier(0.32, 0.72, 0, 1),
+            box-shadow 500ms cubic-bezier(0.32, 0.72, 0, 1) !important;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Components                                                         */
+/* ------------------------------------------------------------------ */
+
+/* Floating glass surface used by the navigation pill. */
+.glass {
+    background-color: color-mix(in srgb, var(--surface) 78%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    backdrop-filter: blur(16px) saturate(1.2);
+    box-shadow:
+        0 0 0 1px var(--hairline),
+        0 14px 32px -18px color-mix(in srgb, var(--ink) 30%, transparent);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .glass {
+        background-color: var(--surface);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
+/* Entry animation for each letter of the name, staggered by its index (--i). */
+@keyframes char-in {
+    from {
+        opacity: 0;
+        transform: translateY(0.18em);
+        filter: blur(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .char-in {
+        /* backwards, not both: once the animation ends the letter returns to its own styles, so no
+       leftover filter or transform flattens the 3D space the letters live in. */
+        animation: char-in 900ms cubic-bezier(0.32, 0.72, 0, 1) backwards;
+        animation-delay: calc(var(--i, 0) * 55ms);
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* Bento backdrop: cursor-tracked glow along the grid lines.          */
+/* ------------------------------------------------------------------ */
+
+.bento-glow {
+    -webkit-mask-image: radial-gradient(
+        var(--glow-radius, 220px) circle at var(--glow-x) var(--glow-y),
+        #000 0%,
+        transparent 100%
+    );
+    mask-image: radial-gradient(
+        var(--glow-radius, 220px) circle at var(--glow-x) var(--glow-y),
+        #000 0%,
+        transparent 100%
+    );
+    opacity: var(--glow-opacity, 0);
+    transition: opacity 400ms ease;
+    background-image:
+        repeating-linear-gradient(
+            to right,
+            var(--accent) 0 1.5px,
+            transparent 1.5px 96px
+        ),
+        repeating-linear-gradient(
+            to bottom,
+            var(--accent) 0 1.5px,
+            transparent 1.5px 96px
+        );
+}
+
+/* ------------------------------------------------------------------ */
+/* Grain backdrop: a small tiled noise texture, stepped every frame   */
+/* of an 8-step animation so it reads as flicker, not drift.          */
+/* ------------------------------------------------------------------ */
+
+.grain-loop {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%27120%27 height=%27120%27><filter id=%27n%27><feTurbulence type=%27fractalNoise%27 baseFrequency=%270.85%27 numOctaves=%272%27 stitchTiles=%27stitch%27/></filter><rect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23n)%27/></svg>");
+    background-size: 140px 140px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .grain-loop {
+        animation: grain-step 700ms steps(8) infinite;
+    }
+}
+
+@keyframes grain-step {
+    0% {
+        transform: translate(0, 0);
+    }
+    12.5% {
+        transform: translate(-6%, 8%);
+    }
+    25% {
+        transform: translate(4%, -10%);
+    }
+    37.5% {
+        transform: translate(-8%, -4%);
+    }
+    50% {
+        transform: translate(9%, 6%);
+    }
+    62.5% {
+        transform: translate(-4%, 9%);
+    }
+    75% {
+        transform: translate(7%, -6%);
+    }
+    87.5% {
+        transform: translate(-9%, 3%);
+    }
+    100% {
+        transform: translate(0, 0);
+    }
+}

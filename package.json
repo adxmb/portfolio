@@ -1,0 +1,36 @@
+{
+    "name": "portfolio",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "predev": "node scripts/preflight.mjs",
+        "dev": "next dev",
+        "prebuild": "node scripts/preflight.mjs",
+        "build": "next build",
+        "start": "next start",
+        "typecheck": "tsc --noEmit",
+        "placeholders": "node scripts/find-placeholders.mjs"
+    },
+    "dependencies": {
+        "@gsap/react": "^2.1.2",
+        "@icons-pack/react-simple-icons": "^13.15.1",
+        "@phosphor-icons/react": "^2.1.10",
+        "geist": "^1.7.2",
+        "gsap": "^3.15.0",
+        "lenis": "^1.3.26",
+        "motion": "^13.4.2",
+        "next": "^16.3.6",
+        "react": "^19.3.0",
+        "react-dom": "^19.3.0",
+        "three": "^0.186.0"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4.3.3",
+        "@types/node": "^24.0.0",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        "@types/three": "^0.186.0",
+        "tailwindcss": "^4.3.3",
+        "typescript": "^5.9.3"
+    }
+}
