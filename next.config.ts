@@ -9,10 +9,13 @@ const nextConfig: NextConfig = {
      * a production build.
      */
     devIndicators: false,
-};
-
-module.exports = {
     allowedDevOrigins: ["192.168.86.31"],
+    output: "export",
+    images: {
+        unoptimized: true,
+    },
+    basePath: "/portfolio",
+    assetPrefix: "/portfolio/",
 };
 
 export default nextConfig;

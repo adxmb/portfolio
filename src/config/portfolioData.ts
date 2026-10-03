@@ -305,7 +305,7 @@ const CONTACT_LABEL = "Contact";
 
 export const portfolio: PortfolioData = {
     meta: {
-        siteUrl: "http://localhost:3000", // @placeholder replace with your deployed URL
+        siteUrl: "http://adxmb.github.io/portfolio",
         locale: "en",
         title: "Adam Bodicoat | Software Designer",
         titleTemplate: "%s | Adam Bodicoat",
@@ -460,7 +460,7 @@ export const portfolio: PortfolioData = {
                         title: "TDOE Intern",
                         organisation: "Jane Street",
                         location: "Hong Kong",
-                        startDate: "2025-12", // @placeholder
+                        startDate: "2025-12",
                         endDate: "2026-02",
                         summary:
                             "Trading desk operations engineer, worked across both development and trading in a fast-paced environment, building tools to improve the efficiency of trading desks. Learnt functional programming, market-making skills, and trading workflows.",
@@ -486,8 +486,8 @@ export const portfolio: PortfolioData = {
                         organisation:
                             "The University of Auckland, Engineering Department",
                         location: "Auckland",
-                        startDate: "2024-11", // @placeholder
-                        endDate: "2025-02", // @placeholder
+                        startDate: "2024-11",
+                        endDate: "2025-02",
                         summary:
                             "Researching Large Language Models' (LLMs) capabilities for test oracle generation with real-world bugs and various prompting strategies at the University of Auckland.",
                         highlights: [
@@ -511,8 +511,8 @@ export const portfolio: PortfolioData = {
                         title: "Bachelor of Software Engineering (Honours)",
                         organisation: "The University of Auckland",
                         location: "Auckland",
-                        startDate: "2022-02", // @placeholder
-                        endDate: "2025-12", // @placeholder
+                        startDate: "2022-02",
+                        endDate: "2025-12",
                         summary:
                             "Graduated with First Class Honours in a Bachelor of Software Engineering (Honours) from the University of Auckland in 2026, with a cumulative GPA of 8.5/9.0 (A+).",
                         highlights: [
