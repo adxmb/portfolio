@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { portfolio, type ImageAsset } from "@/config/portfolioData";
+import { assetPath } from "@/lib/assetPath";
 
 interface FillImageProps {
     image: ImageAsset;
@@ -37,7 +38,7 @@ export function FillImage({
 
     return (
         <Image
-            src={image.src}
+            src={assetPath(image.src)}
             alt={image.alt}
             fill
             priority={priority}
