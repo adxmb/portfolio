@@ -307,7 +307,7 @@ export const portfolio: PortfolioData = {
     meta: {
         siteUrl: "http://adxmb.github.io/portfolio",
         locale: "en",
-        title: "Adam Bodicoat | Software Designer",
+        title: "Adam Bodicoat",
         titleTemplate: "%s | Adam Bodicoat",
         description:
             "Creating and using software to improve efficiency, performance, and everyday life.",
