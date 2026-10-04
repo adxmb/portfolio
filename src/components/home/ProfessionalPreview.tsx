@@ -30,9 +30,9 @@ export function ProfessionalPreview() {
                         <RevealItem
                             as="li"
                             key={entry.id}
-                            className="grid gap-4 border-t border-hairline py-10 first:border-t-0 first:pt-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:gap-16"
+                            className="grid gap-4 border-t border-hairline py-10 first:border-t-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:gap-16"
                         >
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-4">
                                 <p className="font-mono text-meta text-muted">
                                     {formatMonth(entry.startDate, meta.locale)}
                                 </p>
@@ -44,7 +44,7 @@ export function ProfessionalPreview() {
                                 <p className="font-medium text-ink">
                                     {entry.organisation}
                                 </p>
-                                <p className="max-w-[56ch] text-muted text-muted">
+                                <p className="max-w-[56ch] text-muted">
                                     {entry.summary}
                                 </p>
                             </div>
