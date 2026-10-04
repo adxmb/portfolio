@@ -44,7 +44,7 @@ export function ProfessionalPreview() {
                                 <p className="font-medium text-ink">
                                     {entry.organisation}
                                 </p>
-                                <p className="max-w-[56ch] text-lead text-muted">
+                                <p className="max-w-[56ch] text-muted text-muted">
                                     {entry.summary}
                                 </p>
                             </div>
