@@ -15,13 +15,13 @@ export function ProjectsPreview() {
             intro={projects.intro}
             bgSection
         >
-            <RevealGroup className="mt-16">
+            <RevealGroup className="mt-6">
                 <ul className="flex flex-col">
                     {items.map((project) => (
                         <RevealItem
                             as="li"
                             key={project.id}
-                            className="border-t border-hairline first:border-t-0"
+                            className="border-t border-hairline first:border-t-0 first:pt-0"
                         >
                             <Link
                                 href="/projects"

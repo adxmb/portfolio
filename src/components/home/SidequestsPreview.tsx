@@ -25,7 +25,7 @@ export function SidequestsPreview() {
             bgSection
         >
             {items.length === 0 ? (
-                <p className="mt-16 text-muted">{sidequests.emptyState}</p>
+                <p className="mt-6 text-muted">{sidequests.emptyState}</p>
             ) : (
                 <RevealGroup className="mt-16">
                     <ul className="grid gap-12 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-end md:gap-16">

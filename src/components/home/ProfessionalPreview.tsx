@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { portfolio, type CareerEntry } from "@/config/portfolioData";
 import { formatMonth } from "@/lib/format";
@@ -9,13 +9,32 @@ import { Section } from "@/components/sections/Section";
 import { ViewAllLink } from "./ViewAllLink";
 
 /** Visible height of the scrollable timeline box, in pixels. Edit to taste. */
-const TIMELINE_HEIGHT = 260;
+const TIMELINE_HEIGHT = 280;
 /** Width, in pixels, of the rail column (line + dot) that is never faded. Matches each entry's pl-8. */
 const RAIL_WIDTH = 32;
-/** Height, in pixels, of the fade at each edge where more content exists. */
+/** Maximum height, in pixels, of the fade at each edge. It ramps in and out over this distance. */
 const FADE_SIZE = 64;
 /** Multiplier applied to wheel input. 1 = native speed; higher is faster, lower is slower. */
-const SCROLL_SPEED = 0.3;
+const SCROLL_SPEED = 1.5;
+/** Smoothing for the timeline wheel. Match the lerp in SmoothScrollProvider. */
+const TIMELINE_LERP = 0.07;
+
+// Fade sizes come from CSS variables that are updated on scroll, so the fade
+// shrinks continuously as you approach an edge instead of snapping off.
+const TEXT_MASK =
+    "linear-gradient(to bottom, transparent 0, black var(--fade-top, 0px), black calc(100% - var(--fade-bottom, 0px)), transparent 100%)";
+const RAIL_MASK = "linear-gradient(black, black)";
+
+const MASK_STYLE = {
+    maskImage: `${TEXT_MASK}, ${RAIL_MASK}`,
+    WebkitMaskImage: `${TEXT_MASK}, ${RAIL_MASK}`,
+    maskSize: `calc(100% - ${RAIL_WIDTH}px) 100%, ${RAIL_WIDTH}px 100%`,
+    WebkitMaskSize: `calc(100% - ${RAIL_WIDTH}px) 100%, ${RAIL_WIDTH}px 100%`,
+    maskPosition: "right top, left top",
+    WebkitMaskPosition: "right top, left top",
+    maskRepeat: "no-repeat, no-repeat",
+    WebkitMaskRepeat: "no-repeat, no-repeat",
+};
 
 function formatRange(
     entry: CareerEntry,
@@ -31,26 +50,6 @@ function formatRange(
     return `${start} - ${end}`;
 }
 
-/** Nearest ancestor that actually scrolls vertically, or null if it's the window. */
-function getScrollParent(el: HTMLElement): HTMLElement | null {
-    let node = el.parentElement;
-    while (
-        node &&
-        node !== document.body &&
-        node !== document.documentElement
-    ) {
-        const { overflowY } = getComputedStyle(node);
-        if (
-            /(auto|scroll|overlay)/.test(overflowY) &&
-            node.scrollHeight > node.clientHeight
-        ) {
-            return node;
-        }
-        node = node.parentElement;
-    }
-    return null;
-}
-
 export function ProfessionalPreview() {
     const { professional, meta } = portfolio;
     const entries: CareerEntry[] = professional.groups
@@ -58,21 +57,60 @@ export function ProfessionalPreview() {
         .sort((a, b) => b.startDate.localeCompare(a.startDate));
 
     const scrollRef = useRef<HTMLOListElement>(null);
-    const [canScrollUp, setCanScrollUp] = useState(false);
-    const [canScrollDown, setCanScrollDown] = useState(false);
+    const fadeRef = useRef<HTMLDivElement>(null);
 
     const updateScrollState = useCallback(() => {
         const el = scrollRef.current;
-        if (!el) return;
-        setCanScrollUp(el.scrollTop > 1);
-        setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 1);
+        const box = fadeRef.current;
+        if (!el || !box) return;
+        const max = el.scrollHeight - el.clientHeight;
+        // Fade grows over the first FADE_SIZE px of scroll and shrinks over the last.
+        const top = Math.min(FADE_SIZE, Math.max(0, el.scrollTop));
+        const bottom = Math.min(FADE_SIZE, Math.max(0, max - el.scrollTop));
+        box.style.setProperty("--fade-top", `${top}px`);
+        box.style.setProperty("--fade-bottom", `${bottom}px`);
     }, []);
 
     useEffect(() => {
         const el = scrollRef.current;
         if (!el) return;
 
-        updateScrollState();
+        const reduceMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+        ).matches;
+
+        // `current` is the smoothed position, `target` is where the wheel wants to go.
+        let current = el.scrollTop;
+        let target = el.scrollTop;
+        let raf = 0;
+        let last = 0;
+
+        const tick = (now: number) => {
+            const dt = Math.min((now - last) / 1000, 0.05);
+            last = now;
+            const diff = target - current;
+            if (reduceMotion || Math.abs(diff) < 0.3) {
+                current = target;
+                el.scrollTop = current;
+                updateScrollState();
+                raf = 0;
+                return;
+            }
+            // Frame-rate independent lerp, so it feels the same at 60 and 120 Hz.
+            current += diff * (1 - Math.pow(1 - TIMELINE_LERP, dt * 60));
+            el.scrollTop = current;
+            updateScrollState();
+            raf = requestAnimationFrame(tick);
+        };
+
+        const onScroll = () => {
+            // Scrollbar drag, keyboard, touch: keep our position in sync.
+            if (!raf) {
+                current = el.scrollTop;
+                target = el.scrollTop;
+            }
+            updateScrollState();
+        };
 
         const onWheel = (event: WheelEvent) => {
             // Let pinch-zoom (ctrl+wheel) and horizontal gestures alone.
@@ -84,64 +122,40 @@ export function ProfessionalPreview() {
                 delta *= 16; // lines -> px
             else if (event.deltaMode === 2) delta *= el.clientHeight; // pages -> px
 
+            const max = el.scrollHeight - el.clientHeight;
             const goingDown = delta > 0;
-            const atTop = el.scrollTop <= 0;
-            const atBottom =
-                el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
             const atEdge =
-                el.scrollHeight <= el.clientHeight ||
-                (goingDown && atBottom) ||
-                (!goingDown && atTop);
+                max <= 0 ||
+                (goingDown && target >= max - 1) ||
+                (!goingDown && target <= 0);
 
-            // Always take over the event, so nothing else also scrolls
-            // (that double-scroll was the original bug).
+            // At an edge: don't touch the event. It bubbles to Lenis, which scrolls
+            // the page with its own smoothing, so there is no jump.
+            if (atEdge) return;
+
+            // Otherwise the timeline owns this event; Lenis never sees it.
             event.preventDefault();
             event.stopPropagation();
 
-            if (!atEdge) {
-                // Timeline still has room: scroll only the timeline.
-                el.scrollTop += delta * SCROLL_SPEED;
-                return;
+            target = Math.min(max, Math.max(0, target + delta * SCROLL_SPEED));
+            if (!raf) {
+                last = performance.now();
+                raf = requestAnimationFrame(tick);
             }
-
-            // At the edge: hand the scroll to the page ourselves.
-            const parent = getScrollParent(el);
-            if (parent) parent.scrollTop += delta;
-            else window.scrollBy({ top: delta, left: 0, behavior: "instant" });
         };
 
+        updateScrollState();
         el.addEventListener("wheel", onWheel, { passive: false });
-        el.addEventListener("scroll", updateScrollState, { passive: true });
+        el.addEventListener("scroll", onScroll, { passive: true });
         const observer = new ResizeObserver(updateScrollState);
         observer.observe(el);
         return () => {
+            cancelAnimationFrame(raf);
             el.removeEventListener("wheel", onWheel);
-            el.removeEventListener("scroll", updateScrollState);
+            el.removeEventListener("scroll", onScroll);
             observer.disconnect();
         };
     }, [updateScrollState]);
-
-    // Only the text column (right of RAIL_WIDTH) fades; the rail stays fully
-    // opaque always. Each edge fades only when there is more content that way.
-    const topStop = canScrollUp
-        ? `transparent 0, black ${FADE_SIZE}px`
-        : "black 0";
-    const bottomStop = canScrollDown
-        ? `black calc(100% - ${FADE_SIZE}px), transparent 100%`
-        : "black 100%";
-    const textMask = `linear-gradient(to bottom, ${topStop}, ${bottomStop})`;
-    const railMask = "linear-gradient(black, black)";
-
-    const maskStyle = {
-        maskImage: `${textMask}, ${railMask}`,
-        WebkitMaskImage: `${textMask}, ${railMask}`,
-        maskSize: `calc(100% - ${RAIL_WIDTH}px) 100%, ${RAIL_WIDTH}px 100%`,
-        WebkitMaskSize: `calc(100% - ${RAIL_WIDTH}px) 100%, ${RAIL_WIDTH}px 100%`,
-        maskPosition: "right top, left top",
-        WebkitMaskPosition: "right top, left top",
-        maskRepeat: "no-repeat, no-repeat",
-        WebkitMaskRepeat: "no-repeat, no-repeat",
-    };
 
     return (
         <Section
@@ -153,12 +167,12 @@ export function ProfessionalPreview() {
             <RevealGroup className="mt-16">
                 <RevealItem as="div">
                     <div
-                        style={{ height: TIMELINE_HEIGHT, ...maskStyle }}
+                        ref={fadeRef}
+                        style={{ height: TIMELINE_HEIGHT, ...MASK_STYLE }}
                         className="relative overflow-hidden"
                     >
                         <ol
                             ref={scrollRef}
-                            data-lenis-prevent
                             className="h-full overflow-y-auto overscroll-contain pr-4 [scrollbar-gutter:stable]"
                         >
                             {entries.map((entry) => (
