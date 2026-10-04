@@ -30,7 +30,7 @@ export function ProfessionalPreview() {
                         <RevealItem
                             as="li"
                             key={entry.id}
-                            className="grid gap-4 border-t border-hairline py-10 first:border-t-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:gap-16"
+                            className="grid gap-4 border-t border-hairline py-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] md:gap-16"
                         >
                             <div className="flex flex-col gap-4">
                                 <p className="font-mono text-meta text-muted">
