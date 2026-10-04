@@ -15,9 +15,15 @@ const RAIL_WIDTH = 32;
 /** Maximum height, in pixels, of the fade at each edge. It ramps in and out over this distance. */
 const FADE_SIZE = 64;
 /** Multiplier applied to wheel input. 1 = native speed; higher is faster, lower is slower. */
-const SCROLL_SPEED = 1.5;
+const SCROLL_SPEED = 2;
 /** Smoothing for the timeline wheel. Match the lerp in SmoothScrollProvider. */
 const TIMELINE_LERP = 0.07;
+/** A pause in wheel input longer than this (ms) ends a scroll gesture. */
+// const GESTURE_GAP = 180;
+/** Short pause (ms) before the page and the timeline hand scrolling to each other. */
+const HANDOFF_BUFFER = 120;
+/** Remaining distance (px) under which the timeline's glide counts as stopped. */
+const SETTLE_PX = 6;
 
 // Fade sizes come from CSS variables that are updated on scroll, so the fade
 // shrinks continuously as you approach an edge instead of snapping off.
@@ -84,11 +90,15 @@ export function ProfessionalPreview() {
         let target = el.scrollTop;
         let raf = 0;
         let last = 0;
+        // Timestamps that keep the page and the timeline from moving together.
+        let pageMovedAt = -Infinity;
+        let lastMoveAt = -Infinity;
 
         const tick = (now: number) => {
             const dt = Math.min((now - last) / 1000, 0.05);
             last = now;
             const diff = target - current;
+            if (Math.abs(diff) >= SETTLE_PX) lastMoveAt = now;
             if (reduceMotion || Math.abs(diff) < 0.3) {
                 current = target;
                 el.scrollTop = current;
@@ -112,6 +122,11 @@ export function ProfessionalPreview() {
             updateScrollState();
         };
 
+        // Element scroll events don't bubble, so this only fires for the page.
+        const onPageScroll = () => {
+            pageMovedAt = performance.now();
+        };
+
         const onWheel = (event: WheelEvent) => {
             // Let pinch-zoom (ctrl+wheel) and horizontal gestures alone.
             if (event.ctrlKey) return;
@@ -122,21 +137,34 @@ export function ProfessionalPreview() {
                 delta *= 16; // lines -> px
             else if (event.deltaMode === 2) delta *= el.clientHeight; // pages -> px
 
+            const now = performance.now();
+
+            // The page is still moving, or only just stopped: leave the event to
+            // Lenis. The timeline waits until the page has been still for a moment.
+            if (now - pageMovedAt < HANDOFF_BUFFER) return;
+
             const max = el.scrollHeight - el.clientHeight;
             const goingDown = delta > 0;
-            const atEdge =
+            const atEnd =
                 max <= 0 ||
                 (goingDown && target >= max - 1) ||
                 (!goingDown && target <= 0);
 
-            // At an edge: don't touch the event. It bubbles to Lenis, which scrolls
-            // the page with its own smoothing, so there is no jump.
-            if (atEdge) return;
+            if (atEnd) {
+                // The timeline can't move this way. Once it has been still for a
+                // moment, hand the event to the page; until then hold it, so the
+                // two never move together.
+                if (now - lastMoveAt > HANDOFF_BUFFER) return;
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
 
-            // Otherwise the timeline owns this event; Lenis never sees it.
+            // The timeline owns this event; keep Lenis out of it.
             event.preventDefault();
             event.stopPropagation();
 
+            lastMoveAt = now;
             target = Math.min(max, Math.max(0, target + delta * SCROLL_SPEED));
             if (!raf) {
                 last = performance.now();
@@ -145,12 +173,14 @@ export function ProfessionalPreview() {
         };
 
         updateScrollState();
+        window.addEventListener("scroll", onPageScroll, { passive: true });
         el.addEventListener("wheel", onWheel, { passive: false });
         el.addEventListener("scroll", onScroll, { passive: true });
         const observer = new ResizeObserver(updateScrollState);
         observer.observe(el);
         return () => {
             cancelAnimationFrame(raf);
+            window.removeEventListener("scroll", onPageScroll);
             el.removeEventListener("wheel", onWheel);
             el.removeEventListener("scroll", onScroll);
             observer.disconnect();
