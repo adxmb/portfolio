@@ -38,10 +38,7 @@ export default function HomePage() {
             <NameHero />
             <NameHintToast />
 
-            <SectionBackgroundManager
-                images={home.background.images}
-                scrimOpacity={home.background.scrimOpacity}
-            >
+            <SectionBackgroundManager>
                 <HeadlineSection />
                 <ProfessionalPreview />
                 <ProjectsPreview />

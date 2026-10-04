@@ -5,7 +5,6 @@ import {
     type RotatorItem,
 } from "@/components/sidequests/SidequestRotator";
 import { Section } from "./Section";
-import { RichText } from "../ui/RichText";
 
 /**
  * The /sidequests page body: a page header, then the orbiting rotator as the

@@ -95,27 +95,31 @@ function computeGeometry(width: number): Geometry & { height: number } {
 
 function Caption({ item }: { item: RotatorItem }) {
     return (
-        <div className="flex flex-col gap-3">
-            <p className="font-mono text-meta text-muted">{item.meta}</p>
-            <h3 className="text-balance font-display text-h2 font-bold">
-                {item.title}
-            </h3>
-            <p className="text-muted" style={{ whiteSpace: "pre-line" }}>
-                <RichText text={item.summary} />
-            </p>
-            {item.link ? (
-                <a
-                    href={item.link.href}
-                    className="inline-flex w-fit items-center gap-1.5 text-sm font-medium underline decoration-hariline decoration-2 underline-offset-4 transition-colors duration-300 hover:decoration-accent"
-                >
-                    {item.link.label}
-                    <ArrowUpRightIcon
-                        size={14}
-                        weight="bold"
-                        aria-hidden="true"
-                    />
-                </a>
-            ) : null}
+        <div className="grid gap-6 border-t border-hairline pt-8 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1.4fr)] md:gap-16">
+            <div className="flex flex-col gap-2 md:items-end md:text-right">
+                <p className="font-mono text-meta text-muted">{item.meta}</p>
+                <h3 className="text-balance font-display text-h2 font-bold">
+                    {item.title}
+                </h3>
+            </div>
+            <div className="flex max-w-[62ch] flex-col gap-4 md:pt-1">
+                <dd style={{ whiteSpace: "pre-line" }}>
+                    <RichText text={item.summary} />
+                </dd>
+                {item.link ? (
+                    <a
+                        href={item.link.href}
+                        className="inline-flex w-fit items-center gap-1.5 text-sm font-medium underline decoration-hairline decoration-2 underline-offset-4 transition-colors duration-300 hover:decoration-accent"
+                    >
+                        {item.link.label}
+                        <ArrowUpRightIcon
+                            size={14}
+                            weight="bold"
+                            aria-hidden="true"
+                        />
+                    </a>
+                ) : null}
+            </div>
         </div>
     );
 }
@@ -443,7 +447,7 @@ export function SidequestRotator({
                 ) : null}
             </div>
 
-            <div aria-live="polite" className="grid max-w-[52ch]">
+            <div aria-live="polite" className="grid">
                 {/* Sizer: every caption stacked invisibly, so the cell is always as tall as the tallest one. */}
                 {items.map((item) => (
                     <div

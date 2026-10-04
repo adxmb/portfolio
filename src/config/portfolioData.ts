@@ -225,18 +225,6 @@ export interface PortfolioData {
             accentLabel: string;
             accentOptions: Record<AccentPreset, string>;
         };
-        /**
-         * One background image per landing-page section that sits over the fixed
-         * background layer, in the same order the sections render:
-         * 0 headline, 1 professional preview, 2 projects preview, 3 sidequests preview.
-         * As you scroll from one section to the next, the background transitions
-         * from that section's image to the next one's.
-         */
-        background: {
-            /** 0 to 1. How strongly the page colour covers the images so text stays readable. */
-            scrimOpacity: number;
-            images: [ImageAsset, ImageAsset, ImageAsset, ImageAsset];
-        };
     };
     hero: {
         /** The static headline under the name. Keep it to two short lines. */
@@ -352,7 +340,7 @@ export const portfolio: PortfolioData = {
         projectsPreviewCount: 3,
         sidequestsPreviewCount: 2,
         nameVariant: "kinetic",
-        backgroundTransition: "blur",
+        backgroundTransition: "mask",
         accentPreset: "signal" as AccentPreset,
         nameVariantHints: {
             kinetic: "Kinetic Effect: try interact with text",
@@ -389,49 +377,6 @@ export const portfolio: PortfolioData = {
                 sage: "Sage",
                 violet: "Violet",
             } satisfies Record<AccentPreset, string>,
-        },
-        // ASSET REPLACEMENT: each entry below is one section's background image.
-        // Save your own 1920x1080-or-larger landscape photo to /public/images using
-        // the filename already given (or change src to point at a file of your own
-        // choosing), then set alt to a real description. Leaving src empty shows a
-        // labelled placeholder frame instead of a broken image, so nothing here can
-        // ever point at a missing file by accident.
-        background: {
-            scrimOpacity: 0.62,
-            images: [
-                {
-                    src: "/images/bg-headline.jpg", // shown behind the static headline
-                    alt: "",
-                    width: 1920,
-                    height: 1080,
-                    slotLabel:
-                        "Headline background, landscape 16:9, at least 1920 px wide. Save as /public/images/bg-headline.jpg",
-                },
-                {
-                    src: "/images/bg-professional.jpg", // shown behind the professional preview
-                    alt: "",
-                    width: 1920,
-                    height: 1080,
-                    slotLabel:
-                        "Professional background, landscape 16:9, at least 1920 px wide. Save as /public/images/bg-professional.jpg",
-                },
-                {
-                    src: "/images/bg-projects.jpg", // shown behind the projects preview
-                    alt: "",
-                    width: 1920,
-                    height: 1080,
-                    slotLabel:
-                        "Projects background, landscape 16:9, at least 1920 px wide. Save as /public/images/bg-projects.jpg",
-                },
-                {
-                    src: "/images/bg-sidequests.jpg", // shown behind the sidequests preview
-                    alt: "",
-                    width: 1920,
-                    height: 1080,
-                    slotLabel:
-                        "Sidequests background, landscape 16:9, at least 1920 px wide. Save as /public/images/bg-sidequests.jpg",
-                },
-            ],
         },
     },
 
@@ -732,7 +677,7 @@ export const portfolio: PortfolioData = {
                 category: "log",
                 date: "",
                 summary:
-                    "Some of the books I've enjoyed recently:\n" +
+                    "While I haven't been reading as much lately, here are some books I've enjoyed recently:\n" +
                     "• **The Psychology Of Money**, Morgan Housel (2020)\n" +
                     "• **Do Androids Dream Of Electric Sheep**, Phillip K. Dick (1968)\n" +
                     "• **Feel The Fear And Do It Anyway**, Susan Jeffers (1987)\n" +

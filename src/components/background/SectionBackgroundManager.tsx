@@ -2,24 +2,24 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
-import type { ImageAsset } from "@/config/portfolioData";
 import { useHomePreview } from "@/components/home/HomePreviewContext";
 import { BlurTransition } from "./BlurTransition";
 import { MaskTransition } from "./MaskTransition";
 import { useSafeReducedMotion } from "@/lib/useSafeReducedMotion";
 
-/** How much of a screen height the crossfade between two sections spans, centred on the boundary between them. */
 const WINDOW_FRACTION = 0.6;
 
-/** Pixel measurements this manager needs. Recomputed on resize; a plain React state, since it changes rarely, not every frame. */
+const SECTION_COLOURS = [
+    "var(--section-tint-1)",
+    "var(--section-tint-2)",
+    "var(--section-tint-3)",
+    "var(--section-tint-4)",
+];
+
 interface Layout {
-    /** Trigger scroll position for the transition into section i+1, one entry per gap between sections. */
     boundaries: number[];
-    /** Top of the first marked section, in page pixels. Used to fade the layer in. */
     firstTop: number;
-    /** Bottom of the last marked section, in page pixels. Used to fade the layer out. */
     lastBottom: number;
-    /** Screen height at measurement time. */
     viewport: number;
 }
 
@@ -30,12 +30,6 @@ const INITIAL_LAYOUT: Layout = {
     viewport: 900,
 };
 
-/**
- * Measures every element carrying data-bg-section, in document order, and
- * returns the layout the background manager needs. Called on mount, on resize,
- * after fonts load and on route change, since all of these can move the
- * sections without necessarily firing a resize event.
- */
 function measure(): Layout {
     const elements = [
         ...document.querySelectorAll<HTMLElement>("[data-bg-section]"),
@@ -50,7 +44,6 @@ function measure(): Layout {
     const lastRect = last.getBoundingClientRect();
 
     return {
-        // The transition into section i+1 is centred on the midpoint between the two sections' tops.
         boundaries: tops.slice(1).map((top, index) => (top + tops[index]) / 2),
         firstTop: tops[0],
         lastBottom: lastRect.top + window.scrollY + lastRect.height,
@@ -59,33 +52,10 @@ function measure(): Layout {
 }
 
 interface SectionBackgroundManagerProps {
-    /** One image per section, in the same order the sections render (matched to data-bg-section elements by position). */
-    images: ImageAsset[];
-    /** 0 to 1. How strongly the page colour covers the images so text stays readable. */
-    scrimOpacity: number;
-    /** The sections themselves. Each must carry data-bg-section, in the same order as images. */
     children: ReactNode;
 }
 
-/**
- * Gives every section in `children` its own background image and plays the
- * selected transition (mask, blur, RGB split or radial) as the scroll position
- * crosses from one section into the next.
- *
- * Rather than stacking one transition layer per section boundary, which would
- * need careful opacity bookkeeping to stop a later, fully-settled layer from
- * covering an earlier one still mid-transition, this renders exactly one
- * transition at a time: whichever pair of sections the scroll position
- * currently sits between. The two are visually identical at the moment of
- * handover (both show the same "current" image at that scroll position), so
- * switching which pair is mounted there is seamless. Which segment is active
- * is plain React state, updated only when the scroll position actually crosses
- * a boundary, so this never re-renders on every scroll tick; the smooth motion
- * within a segment runs on a motion value.
- */
 export function SectionBackgroundManager({
-    images,
-    scrimOpacity,
     children,
 }: SectionBackgroundManagerProps) {
     const { backgroundTransition } = useHomePreview();
@@ -155,27 +125,28 @@ export function SectionBackgroundManager({
         return 1;
     });
 
-    const from = images[Math.max(0, segment - 1)];
-    const to = images[Math.min(images.length - 1, segment)];
-    const pair: [ImageAsset, ImageAsset] = [from, to];
+    const from =
+        SECTION_COLOURS[Math.max(0, segment - 1) % SECTION_COLOURS.length];
+    const to =
+        SECTION_COLOURS[
+            Math.min(SECTION_COLOURS.length - 1, segment) %
+                SECTION_COLOURS.length
+        ];
+    const pair: [string, string] = [from, to];
 
     return (
         <>
             <motion.div
                 aria-hidden="true"
                 style={{ opacity: layerOpacity }}
-                className="pointer-events-none fixed inset-0 z-[var(--z-backdrop)] overflow-hidden bg-canvas"
+                className="pointer-events-none fixed inset-0 z-[var(--z-backdrop)] overflow-hidden"
             >
                 {backgroundTransition === "mask" ? (
-                    <MaskTransition progress={progress} images={pair} />
+                    <MaskTransition progress={progress} colours={pair} />
                 ) : null}
                 {backgroundTransition === "blur" ? (
-                    <BlurTransition progress={progress} images={pair} />
+                    <BlurTransition progress={progress} colours={pair} />
                 ) : null}
-                <div
-                    className="absolute inset-0 bg-canvas"
-                    style={{ opacity: scrimOpacity }}
-                />
             </motion.div>
             {children}
         </>
