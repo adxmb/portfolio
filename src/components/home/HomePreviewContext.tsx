@@ -11,13 +11,11 @@ import {
 } from "react";
 import {
     accentPresetColours,
-    isAccentPreset,
     type AccentPreset,
     type BackgroundTransitionType,
     type NameVariant,
 } from "@/config/portfolioData";
 import { useHintToast, type Hint } from "@/lib/useHintToast";
-import { pre } from "motion/react-client";
 
 interface HomePreviewValue {
     nameVariant: NameVariant;
