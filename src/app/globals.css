@@ -22,10 +22,10 @@
     --z-nav: 40;
     --z-overlay: 60;
 
-    --section-tint-1: color-mix(in srgb, var(--accent) 6%, var(--canvas));
-    --section-tint-2: color-mix(in srgb, var(--accent) 12%, var(--canvas));
-    --section-tint-3: color-mix(in srgb, var(--accent) 18%, var(--canvas));
-    --section-tint-4: color-mix(in srgb, var(--accent) 24%, var(--canvas));
+    --section-tint-1: color-mix(in srgb, var(--accent) 4%, var(--canvas));
+    --section-tint-2: color-mix(in srgb, var(--accent) 8%, var(--canvas));
+    --section-tint-3: color-mix(in srgb, var(--accent) 12%, var(--canvas));
+    --section-tint-4: color-mix(in srgb, var(--accent) 16%, var(--canvas));
 }
 
 :root[data-theme="dark"] {
