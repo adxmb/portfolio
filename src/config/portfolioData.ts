@@ -486,16 +486,20 @@ export const portfolio: PortfolioData = {
                 summary:
                     "Custom neural network implementation for English accent detection",
                 description:
-                    "Built a lightweight neural network trained to detect different English accents from audio recordings." +
-                    " Trained using a custom dataset of five predominant English-speaking accents.\n" +
-                    "Explored different training strategies and hyperparameters to evaluate the model's performance" +
-                    " and understand the impact of dataset composition on classification accuracy.\n",
+                    "Built a neural network from scratch in Python to classify English, Scottish, and American accents from audio recordings to understand how some machine learning models and smart systems work" +
+                    "Trained on a dataset using over 2,000 audio clips from the VCTK corpus, performing on average over 20% better than chance" +
+                    "Deployed web interface with live audio and FastAPI service using Docker and automated test suite with GitHub Actions pipeline",
+
                 metrics: [],
                 stack: ["Python", "NumPy", "Flask"],
                 links: [
                     {
                         label: "Repo",
                         href: "https://github.com/adxmb/neural-network",
+                    },
+                    {
+                        label: "Live Demo",
+                        href: "https://accent-recognition-z77z.onrender.com/",
                     },
                 ],
             },
@@ -582,9 +586,9 @@ export const portfolio: PortfolioData = {
                 summary:
                     "Playing piano is something that both helps me relax and gives me something meaningful to improve and work towards in my own time.\n\n" +
                     "Working towards a music diploma in piano where I will be performing the following repertoire: *Liszt Liebesträume no.3*, *Debussy La plus que lente*," +
-                    " *Wilkinson Oiseaux d'eau*, *Chopin Ballade no.1*, and *Rachmaninov/Kreisler Liebesleid*.\n\n" +
+                    " *Wilkinson Oiseaux d'eau*, *Chopin Pollonaise op.40 no.2*, *Bach Prelude and Fugue BWV 875*, and *Rachmaninov/Kreisler Liebesleid*.\n\n" +
                     "Some other pieces I've been working on on the side: *Ravel Jeux d'eau*, *Liszt Transcendental Étude No. 4*, " +
-                    " *Chopin Waltz in A-flat major, Op.42*, and some of *Scriabin's Preludes from Op.11*.",
+                    " *Chopin Waltz in A-flat major, Op.42*, *Chopin Ballade no.1*, and some of *Scriabin's Preludes from Op.11*.",
                 image: {
                     src: "/images/sidequests/piano.jpg",
                     alt: "",
